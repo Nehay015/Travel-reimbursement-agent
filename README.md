@@ -1,22 +1,9 @@
 # Travel Reimbursement Approval Agent — Workflow & README
-
-**Candidate submission** · GenAI / Agentic AI Developer role · HCL Technologies
-**Deliverable:** `yourname_TravelReimbursementAgent.ipynb` (single, self-contained, runnable notebook)
-
-This file documents *what was built, why, and how to run it* — a companion to the in-notebook
-README/Design Notes, meant to sit at the root of the GitHub repo so a reviewer understands the
-project before opening the notebook.
-
----
-
 ## 1. What this is
 
 A working prototype of an AI-assisted agent that takes an employee travel reimbursement claim,
 grounds itself in a company travel policy, runs the claim through a set of purpose-built tools,
 and returns a structured decision: `APPROVE`, `PARTIAL_APPROVE`, `REJECT`, or `MANUAL_REVIEW`.
-
-Built against the exact scope given in the assignment PDF — the policy in **Appendix A** and the
-5 sample claims in **Appendix B** — nothing invented, no extra claims added.
 
 ---
 
@@ -65,7 +52,7 @@ Built against the exact scope given in the assignment PDF — the policy in **Ap
 ```bash
 pip install pandas matplotlib          # required
 pip install openai anthropic requests  # optional — only needed if you want a real LLM call
-jupyter notebook yourname_TravelReimbursementAgent.ipynb
+jupyter notebook neha_Travel_Reimbursement_Agent.ipynb
 ```
 
 Then **Run All**. No API key is required — the notebook auto-detects `OPENAI_API_KEY` /
@@ -85,65 +72,3 @@ If it reports `ok: true`, `azure_chat_complete()` can be dropped into the notebo
 try/except-with-fallback pattern already used for OpenAI and Anthropic.
 
 ---
-
-## 4. Key design decision: deterministic tools + LLM-as-explainer
-
-Money-affecting logic (per-diem caps, receipt rules, approval tiers, and the final decision
-itself) is implemented as **plain, deterministic Python** — not left to an LLM to compute — because:
-
-- **No hallucinated numbers.** A wrong dollar figure in a reimbursement pipeline is a compliance
-  problem, not just an unhelpful answer.
-- **Auditability.** Every deduction or Manual Review routing traces to a specific `POL-*` rule ID,
-  reproducibly, every run.
-- **Reproducibility for grading.** The same 5 claims produce identical decisions on any machine,
-  with or without an API key.
-
-The LLM's role is scoped to what GenAI is actually good at here: turning structured tool output
-into a clear, grounded explanation, and estimating a confidence score. This trade-off (fixed-order
-tool pipeline vs. true LLM function-calling) is discussed explicitly in the notebook's
-"Design Notes & Reasoning" section, along with what a next iteration would look like.
-
----
-
-## 5. Verified results (5/5 claims, hand-checked against Appendix A)
-
-| Claim | Decision | Approved | Deducted | Why |
-|---|---|---|---|---|
-| CLM-001 | `APPROVE` | $1,110.00 | $0.00 | All items eligible, in-policy, receipts present |
-| CLM-002 | `REJECT` | $0.00 | $380.00 | Spa + minibar — both ineligible (POL-CAT-02) |
-| CLM-003 | `PARTIAL_APPROVE` | $840.00 | $100.00 | Lodging over nightly cap (POL-PD-02) |
-| CLM-004 | `MANUAL_REVIEW` | — | — | Business-class airfare exception (POL-AIR-01) + missing lodging receipt (POL-RCT-02) + total > $2k (POL-APR-03) |
-| CLM-005 | `MANUAL_REVIEW` | — | — | Missing required meal receipt (POL-RCT-02) |
-
----
-
-## 6. Repo contents
-
-| File | Purpose |
-|---|---|
-| `yourname_TravelReimbursementAgent.ipynb` | **Main deliverable** — the full agent, run top-to-bottom |
-| `UI_SS_1.png` | Dashboard screenshot (also rendered inline in the notebook) |
-| `README.md` | This file |
-| `azure_gpt4o_integration.py` | Optional: Azure GPT-4o connectivity check + drop-in LLM call (not required by the assignment; included as an extension) |
-
----
-
-## 7. Assumptions & limitations
-
-- All 5 claims are embedded exactly as given in Appendix B; the same `run_agent_on_claim()`
-  function works unchanged on any new claim following the same JSON shape.
-- Meals/ground-transport per-diem caps are applied to the claim's aggregate line amount using the
-  stated day count (the sample claims report these as one aggregated line, not per-day lines).
-- `duplicate_detector` uses a simple in-memory signature for this run only; a production version
-  would check a persistent claims database with fuzzier matching.
-- Confidence scores are heuristic, not a calibrated model output.
-- This is a prototype: no auth, no persistent storage, no concurrency handling — intentionally,
-  given the 2–3 day timebox and the assignment's explicit "don't over-engineer" guidance.
-
-## 8. What I'd improve next
-
-- Real function-calling (OpenAI/Anthropic/Azure tool-use API) so the LLM actively chooses tool
-  order at runtime instead of following a fixed pipeline.
-- A persistent audit-trail store (append each claim's tool trace to a log/DB) for compliance review.
-- Automated test cases (pytest) asserting each tool's output against hand-computed edge cases.
-- A feedback loop that captures Manual Review outcomes to refine routing rules over time.
