@@ -1,5 +1,4 @@
 # Travel Reimbursement Approval Agent — Workflow & README
-## 1. What this is
 
 A working prototype of an AI-assisted agent that takes an employee travel reimbursement claim,
 grounds itself in a company travel policy, runs the claim through a set of purpose-built tools,
@@ -35,7 +34,7 @@ and returns a structured decision: `APPROVE`, `PARTIAL_APPROVE`, `REJECT`, or `M
 6. **Ran the agent over all 5 sample claims**, printed the audit trail and 3+ sample outputs, and
    emitted the required structured JSON array in the final code cell.
 7. **Built the dashboard** — a decision-breakdown chart and an approved-vs-deducted-per-claim chart,
-   rendered inline under a `## Dashboard` heading and also saved as `UI_SS_1.png`.
+   rendered inline under a `## Dashboard` heading and also saved as `UI_SS_2.png`.
 8. **Verified correctness by hand** against Appendix A for all 5 claims before treating the notebook
    as done (see Section 5).
 9. **Executed the notebook top-to-bottom** with `nbclient` to confirm zero errors and reproducible
